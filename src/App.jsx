@@ -1,7 +1,9 @@
-import { useRef, useState } from "react"
-import { Button, Form } from "react-bootstrap"
-import imgs from "./assets/images-.jpg"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { Button, Form, Badge } from "react-bootstrap"
 import axios from "axios"
+import ImageCard from "./components/ImageCard";
+import { FaChevronCircleRight, FaChevronCircleLeft } from "react-icons/fa";
+
 
 
 function App() {
@@ -9,38 +11,70 @@ function App() {
   const inputValue = useRef(null)
   const [images, setImages] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1)
+
+  // setting loading state
+  const [loading, setloading] = useState(false)
+
+
+
+
+  function resetSearch() {
+    getImage();
+    setPage(1)
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log(inputValue.current.value)
-    getImage();
+    resetSearch()
   }
 
   const handleClick = (selectChoice) => {
     inputValue.current.value = selectChoice
-    getImage();
+    resetSearch()
+  }
+
+  const handlePrevPage = () => {
+    setPage(page - 1);
+  }
+
+  const handleNextPage = () => {
+    setPage(page + 1);
   }
 
   const ApiUrl = "https://api.unsplash.com/search/photos";
 
-  const ImagesPerPage = 20;
+  const ImagesPerPage = 12;
 
-  const getImage = async () => {
+  const getImage = useCallback(async () => {
     try {
-      const response = await axios.get(`${ApiUrl}?query=${inputValue.current.value}&page=1&per_page=${ImagesPerPage}&client_id=${import.meta.env.VITE_API_KEY}`);
-      setImages(response.data.results)
-      setTotalPages(response.data.total_pages)
+      if (inputValue.current.value) {
+        // setErrorMsg('');
+        setloading(true);
+        const response = await axios.get(`${ApiUrl}?query=${inputValue.current.value}&page=${page}&per_page=${ImagesPerPage}&client_id=${import.meta.env.VITE_API_KEY}`);
+        setImages(response.data.results)
+        setTotalPages(response.data.total_pages)
+        // console.log(response.data.total_pages)
+        setloading(false)
+      }
     } catch (e) {
+      // setErrorMsg("something's wrong");
       console.log(e)
+      setloading(false);
     }
-  };
+  }, [page])
+
+  useEffect(() => {
+    getImage()
+  }, [getImage])
 
   return (
     <div>
       <div className="container">
         <h1 className="text-center">IMAGE FINDER</h1>
         <div className="my-5 d-flex justify-content-center">
-          <div className="col-5">
+          <div className=" col-10 col-md-5">
             <Form onSubmit={handleSubmit} >
               <Form.Group className="mb-3" controlId="formBasicEmail">
                 <Form.Control type="text" ref={inputValue} placeholder="Search" />
@@ -52,26 +86,43 @@ function App() {
           </div>
         </div>
         <div className="d-flex justify-content-center">
-          <div className="col-md-8 d-flex  justify-content-between">
-            <Button onClick={() => handleClick("nature")} >Nature</Button>
-            <Button onClick={() => handleClick("Science")} >Science</Button>
-            <Button onClick={() => handleClick("Animation")} >Animation</Button>
-            <Button onClick={() => handleClick("Vacation")} >Vacation</Button>
-            <Button onClick={() => handleClick("Industries")} >Industries</Button>
+          <div className="col-md-7 d-flex  justify-content-between" style={{ flexFlow: "wrap" }}>
+            <div className="me-1">
+              <Badge bg="success" onClick={() => handleClick("nature")} >Nature</Badge></div>
+            <div className="me-1">
+              <Badge bg="primary" onClick={() => handleClick("Science")} >Science</Badge></div>
+            <div className="me-1">
+              <Badge bg="primary" onClick={() => handleClick("Animation")} >Animation</Badge></div>
+            <div className="me-1">
+              <Badge bg="primary" onClick={() => handleClick("Vacation")} >Vacation</Badge></div>
+            <div className="me-1">
+              <Badge bg="primary" onClick={() => handleClick("Industries")} >Industries</Badge></div>
           </div>
         </div>
-        <div className="row my-5">
-          {
-            images.map((image) => (
-              <div key={image.id} className="col-lg-3 mb-4 col-md-4 col-6">
-                <img
-                  src={image.urls.small}
-                  alt={image.alt_description} className="img-fluid ww-100" />
+        {
+          loading ? (
+            <p className="text-center">Fetching data</p>
+          ) : (
+            <div>
+              <div className="row my-5">
+                {
+                  images.map((image) => (
+                    <ImageCard key={image.id} image={image} />
+                  )
+                  )
+                }
               </div>
-            )
-            )
-          }
-        </div>
+              <div className="d-flex my-5 justify-content-center">
+                {page > 1 && (
+                  <Button className="px-4 rounded-pill me-2 " onClick={handlePrevPage}> <FaChevronCircleLeft size={25}/> </Button>
+                )}
+                {page < totalPages && (
+                  <Button className="px-4 rounded-pill me-2 " onClick={handleNextPage}> <FaChevronCircleRight size={25}/></Button>
+                )}
+              </div>
+            </div>
+          )
+        }
       </div>
     </div>
   )

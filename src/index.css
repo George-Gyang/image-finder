@@ -1,0 +1,12 @@
+.img_height {
+  height: 100%;
+}
+
+.badge:hover{
+cursor:pointer !important;
+}
+
+.badge:active{
+background-color: inherit !important;
+opacity: 0.9 !important;
+}
