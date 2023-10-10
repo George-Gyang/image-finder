@@ -13,6 +13,9 @@ function App() {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1)
 
+  // set activebbutton onclick
+  const [activeBtn, setActiveBtn] = useState(null)
+
   // setting loading state
   const [loading, setloading] = useState(false)
 
@@ -43,6 +46,10 @@ function App() {
     setPage(page + 1);
   }
 
+  const handleActive = (btnIdActive) => {
+    setActiveBtn(btnIdActive)
+  }
+
   const ApiUrl = "https://api.unsplash.com/search/photos";
 
   const ImagesPerPage = 12;
@@ -55,7 +62,7 @@ function App() {
         const response = await axios.get(`${ApiUrl}?query=${inputValue.current.value}&page=${page}&per_page=${ImagesPerPage}&client_id=${import.meta.env.VITE_API_KEY}`);
         setImages(response.data.results)
         setTotalPages(response.data.total_pages)
-        // console.log(response.data.total_pages)
+        // console.log(response.data)
         setloading(false)
       }
     } catch (e) {
@@ -69,10 +76,13 @@ function App() {
     getImage()
   }, [getImage])
 
+  const buttons = ["Nature", "Science", "Animation", "Vacation", "Industries"]
+
   return (
     <div>
-      <div className="container">
-        <h1 className="text-center">IMAGE FINDER</h1>
+      <div className="container py-4">
+        <h1 className="text-center">IMAGE SPOTTER</h1>
+        <p className="text-center fw-semibold text-success fst-italic fs-5"> view your favorite picture </p>
         <div className="my-5 d-flex justify-content-center">
           <div className=" col-10 col-md-5">
             <Form onSubmit={handleSubmit} >
@@ -87,16 +97,11 @@ function App() {
         </div>
         <div className="d-flex justify-content-center">
           <div className="col-md-7 d-flex  justify-content-between" style={{ flexFlow: "wrap" }}>
-            <div className="me-1">
-              <Badge bg="success" onClick={() => handleClick("nature")} >Nature</Badge></div>
-            <div className="me-1">
-              <Badge bg="primary" onClick={() => handleClick("Science")} >Science</Badge></div>
-            <div className="me-1">
-              <Badge bg="primary" onClick={() => handleClick("Animation")} >Animation</Badge></div>
-            <div className="me-1">
-              <Badge bg="primary" onClick={() => handleClick("Vacation")} >Vacation</Badge></div>
-            <div className="me-1">
-              <Badge bg="primary" onClick={() => handleClick("Industries")} >Industries</Badge></div>
+            {buttons.map((btn, index) => (
+              <div className="me-1" key={index}>
+                <Badge bg="primary" className={activeBtn === index ? "active" : ""} onClick={() => (handleClick(btn), handleActive(index))} > {btn}</Badge>
+              </div>
+            ))}
           </div>
         </div>
         {
@@ -114,10 +119,10 @@ function App() {
               </div>
               <div className="d-flex my-5 justify-content-center">
                 {page > 1 && (
-                  <Button className="px-4 rounded-pill me-2 " onClick={handlePrevPage}> <FaChevronCircleLeft size={25}/> </Button>
+                  <Button className="px-4 rounded-pill me-2 " onClick={handlePrevPage}> <FaChevronCircleLeft size={25} /> </Button>
                 )}
                 {page < totalPages && (
-                  <Button className="px-4 rounded-pill me-2 " onClick={handleNextPage}> <FaChevronCircleRight size={25}/></Button>
+                  <Button className="px-4 rounded-pill me-2 " onClick={handleNextPage}> <FaChevronCircleRight size={25} /></Button>
                 )}
               </div>
             </div>

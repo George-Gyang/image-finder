@@ -6,7 +6,15 @@
 cursor:pointer !important;
 }
 
-.badge:active{
-background-color: inherit !important;
+.fs_xsm{
+  font-size: 0.86rem;
+}
+
+/* .badge:active{
+background-color: green !important;
 opacity: 0.9 !important;
+} */
+
+.active{
+  background-color: rgb(25,135,84)!important;
 }
