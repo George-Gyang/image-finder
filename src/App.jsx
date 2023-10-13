@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Button, Form, Badge } from "react-bootstrap"
+import { Button, Form, Badge, InputGroup } from "react-bootstrap"
 import axios from "axios"
 import ImageCard from "./components/ImageCard";
 import { FaChevronCircleRight, FaChevronCircleLeft } from "react-icons/fa";
@@ -18,6 +18,7 @@ function App() {
 
   // setting loading state
   const [loading, setloading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState("")
 
 
 
@@ -60,9 +61,16 @@ function App() {
         // setErrorMsg('');
         setloading(true);
         const response = await axios.get(`${ApiUrl}?query=${inputValue.current.value}&page=${page}&per_page=${ImagesPerPage}&client_id=${import.meta.env.VITE_API_KEY}`);
-        setImages(response.data.results)
-        setTotalPages(response.data.total_pages)
-        // console.log(response.data)
+        if (response.data.results.length < 1) {
+          setErrorMsg("not found!!")
+          setImages(response.data.results)
+          setTotalPages(response.data.total_pages)
+        } else {
+          setImages(response.data.results)
+          setTotalPages(response.data.total_pages)
+          // console.log(response.data.results.length)
+          setErrorMsg("")
+        }
         setloading(false)
       }
     } catch (e) {
@@ -87,7 +95,17 @@ function App() {
           <div className=" col-10 col-md-5">
             <Form onSubmit={handleSubmit} >
               <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Control type="text" ref={inputValue} placeholder="Search" />
+                <InputGroup className="mb-3">
+                  <Form.Control
+                    ref={inputValue}
+                    placeholder="Search"
+                    aria-label="Recipient's username"
+                    aria-describedby="basic-addon2"
+                  />
+                  <Button type="submit" variant="outline-success" id="button-addon2">
+                    submit
+                  </Button>
+                </InputGroup>
                 <Form.Text className="text-muted">
                   Search your favorite category
                 </Form.Text>
@@ -128,6 +146,7 @@ function App() {
             </div>
           )
         }
+        <p className="text-danger fs-3 text-center">{errorMsg}</p>
       </div>
     </div>
   )
